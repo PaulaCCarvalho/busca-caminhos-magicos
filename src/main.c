@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include "graph.c"
+#include "max_heap.c"
 
 TipoApontador Aux;
 int i;
@@ -11,12 +12,46 @@ short NArestas;
 short FimListaAdj;
 
 int main() {
-    printf("Leitura do grafo\n");
+
+    TipoItem TEMP;
+    n = 7;
+    for (i = 1; i <= n; i++)
+        scanf("%d", &A[i].Chave);
+    /* Teste: 20 15 18 10 12 9 13 */
+    printf("Desordenado: ");
+    Imprime(A, &n);
+
+    printf("Constroi   : ");
+    Constroi(A, &n);
+    Imprime(A, &n);
+
+    printf("Aumenta chave posicao 6 para 25: ");
+    AumentaChave(6, 25, A);
+    Imprime(A, &n);
+
+    x.Chave = 13;
+    printf("Insere%3d: ", x.Chave);
+    Insere(&x, A, &n);
+    Imprime(A, &n);
+
+    TEMP = Max(A);
+    printf("Max:%3d\n", TEMP.Chave);
+
+    x = RetiraMax(A, &n);
+    printf("Retira%3d: ", x.Chave);
+    Imprime(A, &n);
+
+    return 0;
+}
+
+/*
+    Código da main para teste do Grafo
+     printf("Leitura do grafo\n");
     printf("No. vertices : ");
     scanf("%d", &NVertices);
     getchar();
     printf("No. arestas :");
-    scanf("%d", &NArestas);
+    scanf("%hd", &NArestas);
     getchar();
     Grafo.NumVertices = NVertices;
     Grafo.NumArestas = 0;
@@ -56,6 +91,4 @@ int main() {
     printf("Retira aresta V1--V2:");
     scanf(" %d %d", &V1, &V2);
     getchar();
-
-    return 0;
-}
+*/
