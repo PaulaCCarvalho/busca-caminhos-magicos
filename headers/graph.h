@@ -1,42 +1,49 @@
-#ifndef BUSCA_CAMINHOS_MAGICOS_GRAPH_H
-#define BUSCA_CAMINHOS_MAGICOS_GRAPH_H
+#include<stdlib.h>
+#include<stdio.h>
 
-#define TRUE 1
+#define MAXNUMVERTICES  100
+#define MAXNUMARESTAS   4500
+#define TRUE  1
 #define FALSE 0
-#define MAXNUMVERTICES 100
-#define MAXNUMARESTAS 4500
-#define MAXTAM (MAXNUMVERTICES + MAXNUMARESTAS * 2)
 
 typedef int TipoValorVertice;
-typedef int TipoPeso;
-typedef int TipoTam;
-
+typedef int  TipoPeso;
 typedef struct TipoGrafo {
-    TipoTam Cab[MAXTAM + 1];
-    TipoTam Prox[MAXTAM + 1];
-    TipoTam Peso[MAXTAM + 1];
-    TipoTam ProxDisponivel;
+    TipoPeso Mat[MAXNUMVERTICES + 1][MAXNUMVERTICES + 1];
     int NumVertices;
     int NumArestas;
 } TipoGrafo;
+typedef int  TipoApontador;
 
-typedef int TipoApontador;
+TipoApontador Aux;
+int i;
+TipoValorVertice V1, V2, Adj;
+TipoPeso Peso;
+TipoGrafo Grafo, Grafot;
+TipoValorVertice NVertices;
+short NArestas;
+short FimListaAdj;
 
 void FGVazio(TipoGrafo *Grafo);
 
-void InsereAresta(TipoValorVertice *V1, TipoValorVertice *V2, TipoPeso *Peso, TipoGrafo *Grafo);
+void InsereAresta(TipoValorVertice *V1, TipoValorVertice *V2,
+                  TipoPeso *Peso, TipoGrafo *Grafo);
 
-short ExisteAresta(TipoValorVertice Vertice1, TipoValorVertice Vertice2, TipoGrafo *Grafo);
+short ExisteAresta(TipoValorVertice Vertice1,
+                   TipoValorVertice Vertice2, TipoGrafo *Grafo);
 
-int ListaAdjVazia(TipoValorVertice *Vertice, TipoGrafo *Grafo);
+/* Operadores para obter a lista de adjacentes */
+short ListaAdjVazia(TipoValorVertice *Vertice, TipoGrafo *Grafo);
 
-TipoApontador PrimeiroListaAdj(TipoValorVertice *Vertice, TipoGrafo *Grafo);
+TipoApontador PrimeiroListaAdj(TipoValorVertice *Vertice,
+                               TipoGrafo *Grafo);
 
-void ProxAdj(TipoGrafo *Grafo, TipoValorVertice *Adj, TipoPeso *Peso, TipoApontador *Prox,
-             short *FimListaAdj);
+void ProxAdj(TipoValorVertice *Vertice, TipoGrafo *Grafo,
+             TipoValorVertice *Adj, TipoPeso *Peso,
+             TipoApontador *Prox, short *FimListaAdj);
+void RetiraAresta(TipoValorVertice *V1, TipoValorVertice *V2,
+                  TipoPeso *Peso, TipoGrafo *Grafo);
 
-void RetiraAresta(TipoValorVertice *V1, TipoValorVertice *V2, TipoPeso *Peso, TipoGrafo *Grafo);
-
+void LiberaGrafo(TipoGrafo *Grafo);
 void ImprimeGrafo(TipoGrafo *Grafo);
-
-#endif //BUSCA_CAMINHOS_MAGICOS_GRAPH_H
+void GrafoTransposto(TipoGrafo *Grafo, TipoGrafo *GrafoT);
