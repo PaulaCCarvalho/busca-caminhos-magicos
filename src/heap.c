@@ -40,6 +40,20 @@ TipoItem RetiraMinInd(TipoItem *A,  TipoPeso *P,  TipoValorVertice *Pos)
     return Result;
 }
 
+void InsereMinHeap(TipoItem novoElemento, TipoItem *A, TipoPeso *P, TipoValorVertice *Pos) {
+    // Aumenta o tamanho da heap (se necessário)
+    n++;
+
+    // Insere o novo elemento na última posição (folha)
+    A[n] = novoElemento;
+    Pos[novoElemento.Chave] = n;
+
+    // Define a chave inicial como INT_MAX para forçar o "afundamento"
+    P[novoElemento.Chave] = INT_MAX;
+
+    // Reajusta a heap para manter a propriedade de min heap
+    DiminuiChaveInd(n, P[novoElemento.Chave], A, P, Pos);
+}
 void DiminuiChaveInd(TipoIndice i, TipoPeso ChaveNova, TipoItem *A,
                      TipoPeso *P,  TipoValorVertice *Pos)
 { TipoItem x;

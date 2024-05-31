@@ -19,6 +19,8 @@ void Constroi(TipoItem *A,  TipoPeso *P,  TipoValorVertice *Pos);
 
 TipoItem RetiraMinInd(TipoItem *A,  TipoPeso *P,  TipoValorVertice *Pos);
 
+void InsereMinHeap(TipoItem novoElemento, TipoItem *A, TipoPeso *P, TipoValorVertice *Pos);
+
 void DiminuiChaveInd(TipoIndice i, TipoPeso ChaveNova, TipoItem *A,
                      TipoPeso *P,  TipoValorVertice *Pos);
 
