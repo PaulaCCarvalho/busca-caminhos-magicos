@@ -1,22 +1,47 @@
 #include <stdio.h>
 #include "graph.c"
 #include "heap.c"
+
+// Define a struct to store path information
+typedef struct Path {
+    TipoValorVertice vertices[MAXNUMVERTICES]; // Array to store path vertices
+    int length; // Path length
+    TipoPeso weight; // Path weight
+} Path;
+
 TipoApontador Aux;
-int i;
 TipoValorVertice V1, V2, Adj;
 TipoPeso Peso;
 TipoGrafo Grafo;
 TipoValorVertice NVertices;
 short NArestas;
-int TEMP, nCidades,Destino, k;
-TipoValorVertice Raiz, N;
+int k;
+TipoValorVertice Raiz, Luminae;
 TipoPeso PesoMinimo;
-TipoVetor KMinWays;
 
-TipoPeso PesoKMin[MAXNUMVERTICES + 1];
-TipoValorVertice PosKMin[MAXNUMVERTICES + 1];
 
-void Dijkstra(TipoGrafo *Grafo, TipoValorVertice *Raiz, TipoValorVertice *N, TipoPeso *pesoMenorCaminho) {
+// Function to print a path
+void printPath(Path* path) {
+    printf("Path: ");
+    for (int i = 0; i < path->length; i++) {
+        printf("%d ", path->vertices[i] + 1); // Print vertex numbers (1-based)
+    }
+    printf("Weight: %d\n", path->weight);
+}
+
+// Function to reconstruct the path from a vertex to the source using predecessor information
+void ReconstructPath(TipoValorVertice u, long Antecessor[], Path* path) {
+    if (u == -1) {
+        return;
+    }
+    // Recursively reconstruct the path from the predecessor
+    ReconstructPath(Antecessor[u], Antecessor, path);
+    // Add the current vertex to the path
+    path->vertices[path->length] = u;
+    path->length++;
+}
+
+void DijkstraKPaths(TipoGrafo *Grafo, TipoValorVertice *Raiz, TipoValorVertice *Luminae, int k, Path* paths) {
     TipoPeso P[MAXNUMVERTICES + 1];
     TipoValorVertice Pos[MAXNUMVERTICES + 1];
     long Antecessor[MAXNUMVERTICES + 1];
@@ -24,6 +49,16 @@ void Dijkstra(TipoGrafo *Grafo, TipoValorVertice *Raiz, TipoValorVertice *N, Tip
     TipoVetor A;
     TipoValorVertice u, v;
     TipoItem temp;
+
+
+    // Initialize path array
+    for (int i = 0; i < k; i++) {
+        paths[i].length = 0;
+        paths[i].weight = INFINITO;
+    }
+
+    // Initialize numPathsFound outside the loop
+    int numPathsFound = 0;
 
     for (u = 0; u <= Grafo->NumVertices; u++) {
         /* Constroi o heap com todos os valores igual a INFINITO */
@@ -38,12 +73,12 @@ void Dijkstra(TipoGrafo *Grafo, TipoValorVertice *Raiz, TipoValorVertice *N, Tip
     n = Grafo->NumVertices;
     P[*(Raiz)] = 0;
     Constroi(A, P, Pos);
-
-    while (n >= 1) {
-        /* enquanto heap nao vazio */
+    while (n >= 1 && numPathsFound <= k) {
+        /* enquanto heap nao vazio e o numero de caminhos encontrados for menor que k */
         temp = RetiraMinInd(A, P, Pos);
         u = temp.Chave;
         Itensheap[u] = FALSE;
+        printf(("\no u agora é %d\n"), u);
 
         if (!ListaAdjVazia(&u, Grafo)) {
             Aux = PrimeiroListaAdj(&u, Grafo);
@@ -56,26 +91,40 @@ void Dijkstra(TipoGrafo *Grafo, TipoValorVertice *Raiz, TipoValorVertice *N, Tip
                     P[v] = P[u] + Peso;
                     Antecessor[v] = u;
                     DiminuiChaveInd(Pos[v], P[v], A, P, Pos);
+
+                    // Update paths array only if the current vertex is Luminae (destination)
+                    printf(("\no v antes do if agora é %d\n"), v);
+              //      if (v == *Luminae) {
+                        // Update paths array if the new path is shorter
+                        paths[numPathsFound].length = 0;
+                        ReconstructPath(v, Antecessor, &paths[numPathsFound]);
+                        numPathsFound++;
+/*
+                        // Maintain a min-heap of k shortest paths based on weight
+                        if (numPathsFound > k) {
+                            // Remove the path with the highest weight from the paths array
+                            paths[k - 1].weight = INFINITO;
+                        }
+*/
+                        // Store weight during path reconstruction
+                        paths[numPathsFound - 1].weight = P[v];
+                    }
                 }
-            }
+            //}
         }
     }
-
-    *pesoMenorCaminho = P[*N];
-    TipoItem novoElemento;
-    novoElemento.Chave = *pesoMenorCaminho;
-    InsereMinHeap(novoElemento, KMinWays, PesoKMin, PosKMin);
 }
 
 int main() {
     printf("No. vertices:");
     scanf("%d%*[^\n]", &NVertices);
-    Destino = NVertices;
+    Luminae = NVertices -1;
     getchar();
     printf("No. arestas:");
     scanf("%d%*[^\n]", &NArestas);
     getchar();
     printf("k:");
+    //esse será o número de caminhos mínimos cujos pesos deverão ser armazenados em uma fila de prioridade
     scanf("%d%*[^\n]", &k);
     getchar();
     Grafo.NumVertices = NVertices;
@@ -94,15 +143,21 @@ int main() {
     }
 
     Raiz = 0;
-    N = NVertices -1;
     ImprimeGrafo(&Grafo);
+    // Define an array to store k shortest paths
+    Path paths[k];
 
-    Dijkstra(&Grafo, &Raiz, &N, &PesoMinimo);
+    DijkstraKPaths(&Grafo, &Raiz, &Luminae, k, paths);
+    int numPathsFound = 0;
+    for (int i = 0; i < k; i++) {
+        if (paths[i].weight != INFINITO) {
+            numPathsFound++;
+            printPath(&paths[i]);
+        }
+    }
 
-    if (PesoMinimo != INFINITO) {
-        printf("Peso mínimo entre Raiz %d e N %d: %d\n", Raiz, N, PesoMinimo);
-    } else {
-        printf("Não existe caminho entre Raiz %d e N %d.\n", Raiz, N);
+    if (numPathsFound == 0) {
+        printf("Não existem %d caminhos mínimos entre Raiz %d e Luminae %d.\n", k, Raiz, Luminae);
     }
 
     return 0;
