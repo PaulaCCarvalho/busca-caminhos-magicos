@@ -78,7 +78,6 @@ void DijkstraKPaths(TipoGrafo *Grafo, TipoValorVertice *Raiz, TipoValorVertice *
         temp = RetiraMinInd(A, P, Pos);
         u = temp.Chave;
         Itensheap[u] = FALSE;
-        printf(("\no u agora é %d\n"), u);
 
         if (!ListaAdjVazia(&u, Grafo)) {
             Aux = PrimeiroListaAdj(&u, Grafo);
@@ -93,7 +92,6 @@ void DijkstraKPaths(TipoGrafo *Grafo, TipoValorVertice *Raiz, TipoValorVertice *
                     DiminuiChaveInd(Pos[v], P[v], A, P, Pos);
 
                     // Update paths array only if the current vertex is Luminae (destination)
-                    printf(("\no v antes do if agora é %d\n"), v);
               //      if (v == *Luminae) {
                         // Update paths array if the new path is shorter
                         paths[numPathsFound].length = 0;
