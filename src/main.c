@@ -19,7 +19,7 @@ int k = 0;
 int V1, V2, peso;
 
 int main(int argc, char *argv[]) {
-    // getrusage(RUSAGE_SELF, &start);
+     getrusage(RUSAGE_SELF, &start);
 
     // Processando os argumentos de linha de comando
     while ((opt = getopt(argc, argv, "i:o:")) != -1) {
@@ -77,12 +77,11 @@ int main(int argc, char *argv[]) {
 
     liberaGrafo(&grafo);
     liberaHeap(&heap);
-    //getrusage(RUSAGE_SELF, &end);
+    getrusage(RUSAGE_SELF, &end);
 
-    //diff = end.ru_utime.tv_sec+end.ru_utime.tv_usec*1e-6 -
-    //      (start.ru_utime.tv_sec+start.ru_utime.tv_usec*1e-6);
+    diff = end.ru_utime.tv_sec+end.ru_utime.tv_usec*1e-6 -
+          (start.ru_utime.tv_sec+start.ru_utime.tv_usec*1e-6);
 
-    //printf("%lu of that took %f seconds (%f sec/act) to accomplish.\n",
-    //       LOTS, diff, (diff/(double)LOTS));
+    printf("%lu of that took %f seconds (%f sec/act) to accomplish.\n",LOTS, diff, (diff/(double)LOTS));
     return 0;
 }
