@@ -1,49 +1,24 @@
-#include<stdlib.h>
-#include<stdio.h>
-#include "limits.h"
+#ifndef BUSCA_K_CAMINHOS_GRAFO_H
+#define BUSCA_K_CAMINHOS_GRAFO_H
 
-#define TRUE  1
-#define FALSE 0
+// Structure to represent a node in the graph
+typedef struct No {
+    int destino;
+    int peso;
+    struct No* proximo;
+}No;
 
-typedef int TipoValorVertice;
-typedef int  TipoPeso;
-typedef struct TipoGrafo {
-    TipoPeso **Mat;
-    int NumVertices;
-    int NumArestas;
-} TipoGrafo;
-typedef int  TipoApontador;
+// Structure to represent the adjacency list
+typedef struct Graph {
+    int numDeVertices;
+    struct No** head;
+} Grafo;
 
-TipoApontador Aux;
-int i;
-TipoValorVertice V1, V2, Adj;
-TipoPeso Peso;
-TipoGrafo Grafo, Grafot;
-TipoValorVertice NVertices;
-short NArestas;
-short FimListaAdj;
-
-void FGVazio(TipoGrafo *Grafo);
-
-void InsereAresta(TipoValorVertice *V1, TipoValorVertice *V2,
-                  TipoPeso *Peso, TipoGrafo *Grafo);
-
-short ExisteAresta(TipoValorVertice Vertice1,
-                   TipoValorVertice Vertice2, TipoGrafo *Grafo);
-
-/* Operadores para obter a lista de adjacentes */
-short ListaAdjVazia(TipoValorVertice *Vertice, TipoGrafo *Grafo);
-
-TipoApontador PrimeiroListaAdj(TipoValorVertice *Vertice,
-                               TipoGrafo *Grafo);
-
-void ProxAdj(TipoValorVertice *Vertice, TipoGrafo *Grafo,
-             TipoValorVertice *Adj, TipoPeso *Peso,
-             TipoApontador *Prox, short *FimListaAdj);
-void RetiraAresta(TipoValorVertice *V1, TipoValorVertice *V2,
-                  TipoPeso *Peso, TipoGrafo *Grafo);
-
-void LiberaGrafo(TipoGrafo *Grafo);
-void ImprimeGrafo(TipoGrafo *Grafo);
-void GrafoTransposto(TipoGrafo *Grafo, TipoGrafo *GrafoT);
-void LiberaGrafo(TipoGrafo *Grafo);
+// Function prototypes
+struct No* createNode(int dest, int cost);
+void addEdge(struct Graph* graph, int src, int dest, int cost);
+void criaGrafoVazio(Grafo* grafo, int numDeVertices);
+void imprimeGrafo(Grafo* grafo, int numDeVertices);
+void populaGrafo(Grafo* grafo, int edges[][3], int m);
+void liberaGrafo(Grafo* grafo);
+#endif //BUSCA_K_CAMINHOS_GRAFO_H

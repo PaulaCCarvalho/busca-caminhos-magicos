@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include "../headers/dijkstra_k_shortest.h"
+#include "../headers/dijkstra.h"
 #include <sys/resource.h>
 #include <unistd.h>
 #include <getopt.h>

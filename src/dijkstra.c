@@ -1,93 +1,95 @@
-#include "../headers/min_heap.h"
+#include "../headers/dijkstra.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include <limits.h>
 
-void criaHeap(Heap* heap, int initialCapacity) {
-    // Inicializa o heap com capacidade inicial
-    heap->capacity = initialCapacity;
-    heap->pq = (Par *)malloc(initialCapacity * sizeof(Par));
-    if (heap->pq == NULL) {
-        fprintf(stderr, "Erro: Falha ao alocar memória para o heap.\n");
+int **distancias;
+
+// Função para comparar dois pares para ordenação no heap mínimo
+int comparaPares(const void* a, const void* b) {
+    return ((Par*)a)->primeiro - ((Par*)b)->primeiro;
+}
+
+// Função para encontrar os k menores caminhos usando Dijkstra
+void encontraKMenoresCaminhos(int n, int m, int k, Grafo* graph, Heap* heap, char* outputFile) {
+    // Inicialização das estruturas
+    distancias = (int **)malloc((n + 1) * sizeof(int *));
+    if (distancias == NULL) {
+        fprintf(stderr, "Erro: Falha ao alocar memória para distancias.\n");
         exit(EXIT_FAILURE);
     }
-    heap->pqSize = 0; // Inicializa o tamanho do heap como zero
-}
-
-void insertMinHeap(Heap* heap, int distance, int node) {
-    // Verifica se há espaço suficiente no heap
-    if (heap->pqSize == heap->capacity) {
-        // Redimensiona o heap para o dobro da capacidade atual
-        heap->capacity *= 2;
-        heap->pq = (Par *)realloc(heap->pq, heap->capacity * sizeof(Par));
-        if (heap->pq == NULL) {
-            fprintf(stderr, "Erro: Falha ao realocar memória para o heap.\n");
+    for (int i = 1; i <= n; i++) {
+        distancias[i] = (int *)malloc(k * sizeof(int));
+        if (distancias[i] == NULL) {
+            fprintf(stderr, "Erro: Falha ao alocar memória para distancias[%d].\n", i);
             exit(EXIT_FAILURE);
+        }
+        for (int j = 0; j < k; j++) {
+            distancias[i][j] = INT_MAX; // Inicializar com valor máximo
         }
     }
 
-    // Insere o novo elemento no final do heap
-    heap->pq[heap->pqSize].primeiro = distance;
-    heap->pq[heap->pqSize].segundo = node;
-    heap->pqSize++;
+    // Inicialização da fila de prioridade (heap mínimo)
+    insertMinHeap(heap, 0, 1); // Inserir nó inicial com distância 0
+    distancias[1][0] = 0;
 
-    // Ajusta o heap mínimo
-    int idx = heap->pqSize - 1;
-    while (idx > 0) {
-        int parent = (idx - 1) / 2;
-        if (heap->pq[parent].primeiro > heap->pq[idx].primeiro) {
-            // Troca os elementos
-            Par tmp = heap->pq[parent];
-            heap->pq[parent] = heap->pq[idx];
-            heap->pq[idx] = tmp;
-            idx = parent;
-        } else break;
-    }
-}
+    // Processamento do algoritmo de Dijkstra
+    while (heap->pqSize > 0) {
+        Par minPair = extractMinHeap(heap);
+        int u = minPair.segundo;
+        int d = minPair.primeiro;
 
-Par extractMinHeap(Heap* heap) {
-    Par minElement = heap->pq[0];
-    heap->pq[0] = heap->pq[heap->pqSize - 1];
-    heap->pqSize--;
+        if (distancias[u][k - 1] < d) continue;
 
-    // Reduz o tamanho do heap se estiver muito grande
-    if (heap->pqSize > 0 && heap->pqSize <= heap->capacity / 4) {
-        heap->capacity /= 2;
-        heap->pq = (Par *)realloc(heap->pq, heap->capacity * sizeof(Par));
-        if (heap->pq == NULL) {
-            fprintf(stderr, "Erro: Falha ao realocar memória para o heap.\n");
-            exit(EXIT_FAILURE);
+        struct No *iter = graph->head[u];
+        while (iter != NULL) {
+            int dest = iter->destino;
+            int cost = iter->peso;
+
+            if (distancias[dest] == NULL) {
+                distancias[dest] = (int *)malloc(k * sizeof(int));
+                if (distancias[dest] == NULL) {
+                    fprintf(stderr, "Erro: Falha ao alocar memória para distancias[%d].\n", dest);
+                    exit(EXIT_FAILURE);
+                }
+                for (int j = 0; j < k; j++) {
+                    distancias[dest][j] = INT_MAX; // Inicializar com valor máximo
+                }
+            }
+
+            if (d + cost < distancias[dest][k - 1]) {
+                distancias[dest][k - 1] = d + cost;
+
+                // Ordenar as k menores distâncias do vértice dest
+                qsort(distancias[dest], k, sizeof(int), comparaPares);
+
+                if (heap->pqSize < n * k) {
+                    insertMinHeap(heap, d + cost, dest);
+                }
+            }
+            iter = iter->proximo;
         }
     }
 
-    // Executa o ajuste de heap mínimo a partir da raiz
-    minHeapify(heap, 0);
-
-    return minElement;
-}
-
-void minHeapify(Heap *heap, int idx) {
-    while (1) {
-        int left = 2 * idx + 1;
-        int right = 2 * idx + 2;
-        int smallest = idx;
-        if (left < heap->pqSize && heap->pq[left].primeiro < heap->pq[smallest].primeiro)
-            smallest = left;
-        if (right < heap->pqSize && heap->pq[right].primeiro < heap->pq[smallest].primeiro)
-            smallest = right;
-        if (smallest != idx) {
-            // Troca os elementos
-            Par tmp = heap->pq[idx];
-            heap->pq[idx] = heap->pq[smallest];
-            heap->pq[smallest] = tmp;
-            idx = smallest;
-        } else break;
+    // Escrever as k menores distâncias no arquivo de saída
+    FILE *fp_out = fopen(outputFile, "w");
+    if (fp_out == NULL) {
+        fprintf(stderr, "Não foi possível abrir o arquivo de saída '%s'.\n", outputFile);
+        exit(EXIT_FAILURE);
     }
-}
 
-void liberaHeap(Heap* heap) {
-    // Libera a memória alocada para o heap
-    free(heap->pq);
-    heap->pq = NULL;
-    heap->pqSize = 0;
-    heap->capacity = 0;
+    for (int i = 0; i < k; i++) {
+        fprintf(fp_out, "%d ", distancias[n][i]);
+        printf("%d ", distancias[n][i]);
+    }
+    fprintf(fp_out, "\n");
+
+    fclose(fp_out);
+    printf("Dados processados e salvos em '%s'.\n", outputFile);
+
+    // Liberação de memória
+    for (int i = 1; i <= n; i++) {
+        free(distancias[i]);
+    }
+    free(distancias);
 }

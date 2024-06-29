@@ -1,4 +1,4 @@
-#include "../headers/grafo.h"
+#include "../headers/graph.h"
 #include <stdio.h>
 #include <stdlib.h>
 

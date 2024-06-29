@@ -1,8 +1,8 @@
 #ifndef BUSCA_K_CAMINHOS_DIJKSTRA_K_SHORTEST_H
 #define BUSCA_K_CAMINHOS_DIJKSTRA_K_SHORTEST_H
 
-#include "grafo.h"
-#include "min_heap.h"
+#include "graph.h"
+#include "heap.h"
 
 void inicializaDijkstra(int n, int k);
 void encontraKMenoresCaminhos(int n, int m, int k, Grafo* graph, Heap* heap,  char* outputFile);
