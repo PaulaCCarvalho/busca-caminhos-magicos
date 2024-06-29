@@ -1,162 +1,88 @@
 #include <stdio.h>
-#include "graph.c"
-#include "heap.c"
+#include <stdlib.h>
+#include "../headers/dijkstra_k_shortest.h"
+#include <sys/resource.h>
+#include <unistd.h>
+#include <getopt.h>
 
-// Define a struct to store path information
-typedef struct Path {
-    TipoValorVertice vertices[MAXNUMVERTICES]; // Array to store path vertices
-    int length; // Path length
-    TipoPeso weight; // Path weight
-} Path;
+int verticeOrigem, verticeDestino, peso;
+const unsigned long LOTS = 50000000;
+struct rusage start, end;
+unsigned long i;
+double diff;
+int opt;
+char *inputFile = NULL;
+char *outputFile = NULL;
+int numVertices = 0;
+int numArestas = 0;
+int k = 0;
+int V1, V2, peso;
 
-TipoApontador Aux;
-TipoValorVertice V1, V2, Adj;
-TipoPeso Peso;
-TipoGrafo Grafo;
-TipoValorVertice NVertices;
-short NArestas;
-int k;
-TipoValorVertice Raiz, Luminae;
-TipoPeso PesoMinimo;
+int main(int argc, char *argv[]) {
+    // getrusage(RUSAGE_SELF, &start);
 
-
-// Function to print a path
-void printPath(Path* path) {
-    printf("Path: ");
-    for (int i = 0; i < path->length; i++) {
-        printf("%d ", path->vertices[i] + 1); // Print vertex numbers (1-based)
-    }
-    printf("Weight: %d\n", path->weight);
-}
-
-// Function to reconstruct the path from a vertex to the source using predecessor information
-void ReconstructPath(TipoValorVertice u, long Antecessor[], Path* path) {
-    if (u == -1) {
-        return;
-    }
-    // Recursively reconstruct the path from the predecessor
-    ReconstructPath(Antecessor[u], Antecessor, path);
-    // Add the current vertex to the path
-    path->vertices[path->length] = u;
-    path->length++;
-}
-
-void DijkstraKPaths(TipoGrafo *Grafo, TipoValorVertice *Raiz, TipoValorVertice *Luminae, int k, Path* paths) {
-    TipoPeso P[MAXNUMVERTICES + 1];
-    TipoValorVertice Pos[MAXNUMVERTICES + 1];
-    long Antecessor[MAXNUMVERTICES + 1];
-    short Itensheap[MAXNUMVERTICES + 1];
-    TipoVetor A;
-    TipoValorVertice u, v;
-    TipoItem temp;
-
-
-    // Initialize path array
-    for (int i = 0; i < k; i++) {
-        paths[i].length = 0;
-        paths[i].weight = INFINITO;
-    }
-
-    // Initialize numPathsFound outside the loop
-    int numPathsFound = 0;
-
-    for (u = 0; u <= Grafo->NumVertices; u++) {
-        /* Constroi o heap com todos os valores igual a INFINITO */
-        Antecessor[u] = -1;
-        P[u] = INFINITO;
-        A[u+1].Chave = u;
-        /* Heap a ser construido */
-        Itensheap[u] = TRUE;
-        Pos[u] = u + 1;
-    }
-
-    n = Grafo->NumVertices;
-    P[*(Raiz)] = 0;
-    Constroi(A, P, Pos);
-    while (n >= 1 && numPathsFound <= k) {
-        /* enquanto heap nao vazio e o numero de caminhos encontrados for menor que k */
-        temp = RetiraMinInd(A, P, Pos);
-        u = temp.Chave;
-        Itensheap[u] = FALSE;
-
-        if (!ListaAdjVazia(&u, Grafo)) {
-            Aux = PrimeiroListaAdj(&u, Grafo);
-            FimListaAdj = FALSE;
-
-            while (!FimListaAdj) {
-                ProxAdj(&u, Grafo, &v, &Peso, &Aux, &FimListaAdj);
-
-                if (P[v] > (P[u] + Peso)) {
-                    P[v] = P[u] + Peso;
-                    Antecessor[v] = u;
-                    DiminuiChaveInd(Pos[v], P[v], A, P, Pos);
-
-                    // Update paths array only if the current vertex is Luminae (destination)
-              //      if (v == *Luminae) {
-                        // Update paths array if the new path is shorter
-                        paths[numPathsFound].length = 0;
-                        ReconstructPath(v, Antecessor, &paths[numPathsFound]);
-                        numPathsFound++;
-/*
-                        // Maintain a min-heap of k shortest paths based on weight
-                        if (numPathsFound > k) {
-                            // Remove the path with the highest weight from the paths array
-                            paths[k - 1].weight = INFINITO;
-                        }
-*/
-                        // Store weight during path reconstruction
-                        paths[numPathsFound - 1].weight = P[v];
-                    }
-                }
-            //}
-        }
-    }
-}
-
-int main() {
-    printf("No. vertices:");
-    scanf("%d%*[^\n]", &NVertices);
-    Luminae = NVertices -1;
-    getchar();
-    printf("No. arestas:");
-    scanf("%d%*[^\n]", &NArestas);
-    getchar();
-    printf("k:");
-    //esse será o número de caminhos mínimos cujos pesos deverão ser armazenados em uma fila de prioridade
-    scanf("%d%*[^\n]", &k);
-    getchar();
-    Grafo.NumVertices = NVertices;
-    Grafo.NumArestas = 0;
-    FGVazio(&Grafo);
-
-    for (i = 0; i < NArestas; i++) {
-        printf("Insere V1 -- V2 -- Peso:");
-        scanf("%d%d%d%*[^\n]", &V1, &V2, &Peso);
-        getchar();
-        Grafo.NumArestas++;
-        TipoValorVertice tempV1 = V1 - 1;
-        TipoValorVertice tempV2 = V2 - 1;
-
-        InsereAresta(&tempV1, &tempV2, &Peso, &Grafo);
-    }
-
-    Raiz = 0;
-    ImprimeGrafo(&Grafo);
-    // Define an array to store k shortest paths
-    Path paths[k];
-
-    DijkstraKPaths(&Grafo, &Raiz, &Luminae, k, paths);
-    int numPathsFound = 0;
-    for (int i = 0; i < k; i++) {
-        if (paths[i].weight != INFINITO) {
-            numPathsFound++;
-            printPath(&paths[i]);
+    // Processando os argumentos de linha de comando
+    while ((opt = getopt(argc, argv, "i:o:")) != -1) {
+        switch (opt) {
+            case 'i':
+                inputFile = optarg;
+                break;
+            case 'o':
+                outputFile = optarg;
+                break;
+            default:
+                fprintf(stderr, "Uso: %s -i <arquivo_entrada> -o <arquivo_saida>\n", argv[0]);
+                exit(EXIT_FAILURE);
         }
     }
 
-    if (numPathsFound == 0) {
-        printf("Não existem %d caminhos mínimos entre Raiz %d e Luminae %d.\n", k, Raiz, Luminae);
+    // Verificando se foram fornecidos arquivos de entrada e saída
+    if (inputFile == NULL || outputFile == NULL) {
+        fprintf(stderr, "Você deve fornecer tanto o arquivo de entrada quanto o arquivo de saída.\n");
+        exit(EXIT_FAILURE);
     }
 
+    // Abra o arquivo de entrada para leitura
+    FILE *fp_in = fopen(inputFile, "r");
+    if (fp_in == NULL) {
+        fprintf(stderr, "Não foi possível abrir o arquivo de entrada '%s'.\n", inputFile);
+        exit(EXIT_FAILURE);
+    }
+
+    // Leitura dos três primeiros valores (número de vértices, número de arestas, k)
+    fscanf(fp_in, "%d %d %d", &numVertices, &numArestas, &k);
+
+    Grafo grafo;
+    criaGrafoVazio(&grafo, numVertices);
+    Heap heap;
+    criaHeap(&heap, k);
+
+    while (fscanf(fp_in, "%d %d %d", &V1, &V2, &peso) == 3) {
+        addEdge(&grafo, V1, V2, peso);
+    }
+
+    // Fechar o arquivo de entrada após a leitura
+    fclose(fp_in);
+
+    // Abre o arquivo de saída para escrita
+    FILE *fp_out = fopen(outputFile, "w");
+    if (fp_out == NULL) {
+        fprintf(stderr, "Não foi possível abrir o arquivo de saída '%s'.\n", outputFile);
+        exit(EXIT_FAILURE);
+    }
+
+    //imprimeGrafo(&grafo, numVertices);
+    encontraKMenoresCaminhos(numVertices, numArestas, k, &grafo, &heap, outputFile);
+//    imprimeGrafo(&grafo, numVertices);
+
+    liberaGrafo(&grafo);
+    liberaHeap(&heap);
+    //getrusage(RUSAGE_SELF, &end);
+
+    //diff = end.ru_utime.tv_sec+end.ru_utime.tv_usec*1e-6 -
+    //      (start.ru_utime.tv_sec+start.ru_utime.tv_usec*1e-6);
+
+    //printf("%lu of that took %f seconds (%f sec/act) to accomplish.\n",
+    //       LOTS, diff, (diff/(double)LOTS));
     return 0;
 }

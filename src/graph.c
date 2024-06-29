@@ -1,92 +1,72 @@
-#include "../headers/graph.h"
+#include "../headers/grafo.h"
+#include <stdio.h>
+#include <stdlib.h>
 
-void FGVazio(TipoGrafo *Grafo)
-{ short i, j;
-    for (i = 0; i <= Grafo->NumVertices; i++)
-    { for (j = 0; j <=Grafo->NumVertices; j++) Grafo->Mat[i][j] = 0; }
-}
-
-void InsereAresta(TipoValorVertice *V1, TipoValorVertice *V2,
-                  TipoPeso *Peso, TipoGrafo *Grafo)
-{ Grafo->Mat[*V1][*V2] = *Peso; }
-
-short ExisteAresta(TipoValorVertice Vertice1,
-                   TipoValorVertice Vertice2, TipoGrafo *Grafo)
-{ return (Grafo->Mat[Vertice1][Vertice2] > 0); }
-
-/* Operadores para obter a lista de adjacentes */
-short ListaAdjVazia(TipoValorVertice *Vertice, TipoGrafo *Grafo)
-{ TipoApontador Aux = 0;  short ListaVazia = TRUE;
-    while (Aux < Grafo->NumVertices && ListaVazia)
-    { if (Grafo->Mat[*Vertice][Aux] > 0)
-            ListaVazia = FALSE;
-        else Aux++;
+void criaGrafoVazio(Grafo* grafo, int numDeVertices) {
+    grafo->numDeVertices = numDeVertices;
+    grafo->head = (struct No**)calloc(numDeVertices + 1, sizeof(struct No*));
+    if (grafo->head == NULL) {
+        printf("Erro: Memória insuficiente para criar o grafo.\n");
+        exit(EXIT_FAILURE);
     }
-    return (ListaVazia == TRUE);
 }
 
-TipoApontador PrimeiroListaAdj(TipoValorVertice *Vertice,
-                               TipoGrafo *Grafo)
-{ TipoValorVertice Result;
-    TipoApontador Aux = 0;  short ListaVazia = TRUE;
-    while (Aux < Grafo->NumVertices && ListaVazia)
-    { if (Grafo->Mat[*Vertice][Aux] > 0)
-        { Result = Aux; ListaVazia = FALSE; }
-        else Aux++;
+
+// Function to create a new node
+struct No* createNode(int dest, int cost) {
+    struct No* newNode = (struct No*)malloc(sizeof(struct No));
+    newNode->destino = dest;
+    newNode->peso = cost;
+    newNode->proximo = NULL;
+    return newNode;
+}
+
+void addEdge(Grafo* grafo, int src, int dest, int cost) {
+    // Criar um novo nó
+    struct No* newNode = (struct No*)malloc(sizeof(struct No));
+    newNode->destino = dest;
+    newNode->peso = cost;
+    newNode->proximo = NULL;
+
+    // Inserir o novo nó no início da lista de adjacência de src
+    if (grafo->head[src] == NULL) {
+        grafo->head[src] = newNode;
+    } else {
+        newNode->proximo = grafo->head[src];
+        grafo->head[src] = newNode;
     }
-    if (Aux == Grafo->NumVertices)
-        printf("Erro: Lista adjacencia vazia (PrimeiroListaAdj)\n");
-    return Result;
 }
 
-void ProxAdj(TipoValorVertice *Vertice, TipoGrafo *Grafo,
-             TipoValorVertice *Adj, TipoPeso *Peso,
-             TipoApontador *Prox, short *FimListaAdj)
-{ /* Retorna Adj apontado por Prox */
-    *Adj = *Prox;  *Peso = Grafo->Mat[*Vertice][*Prox];  (*Prox)++;
-    while (*Prox < Grafo->NumVertices &&
-           Grafo->Mat[*Vertice][*Prox] == 0) (*Prox)++;
-    if (*Prox == Grafo->NumVertices)
-        *FimListaAdj = TRUE;
-}
 
-void RetiraAresta(TipoValorVertice *V1, TipoValorVertice *V2,
-                  TipoPeso *Peso, TipoGrafo *Grafo)
-{ if (Grafo->Mat[*V1][*V2] == 0)
-        printf("Aresta nao existe\n");
-    else { *Peso = Grafo->Mat[*V1][*V2]; Grafo->Mat[*V1][*V2] = 0; }
-}
-
-void LiberaGrafo(TipoGrafo *Grafo)
-{  /* Nao faz nada no caso de matrizes de adjacencia */ }
-
-void ImprimeGrafo(TipoGrafo *Grafo)
-{ short i, j;
-    printf("   ");
-    for (i = 0; i <= Grafo->NumVertices - 1; i++) printf("%3d", i);
-    printf("\n");
-    for (i = 0; i <=  Grafo->NumVertices - 1; i++)
-    { printf("%3d", i);
-        for (j = 0; j <=Grafo->NumVertices - 1; j++)
-            printf("%3d", Grafo->Mat[i][j]);
+void imprimeGrafo(Grafo* grafo, int numDeVertices) {
+    for (int i = 1; i <= numDeVertices; i++) {
+        printf("Vértice %d: ", i);
+        struct No* curr = grafo->head[i];
+        while (curr != NULL) {
+            printf("%d (%d) -> ", curr->destino, curr->peso);
+            curr = curr->proximo;
+        }
         printf("\n");
     }
 }
 
-void GrafoTransposto(TipoGrafo *Grafo, TipoGrafo *GrafoT)
-{ TipoValorVertice v, Adj;
-    TipoPeso Peso; TipoApontador Aux;
-    FGVazio(GrafoT);
-    GrafoT->NumVertices = Grafo->NumVertices;
-    GrafoT->NumArestas = Grafo->NumArestas;
-    for (v = 0; v <= Grafo->NumVertices - 1; v++)
-    { if (!ListaAdjVazia(&v, Grafo))
-        { Aux = PrimeiroListaAdj(&v, Grafo);
-            FimListaAdj = FALSE;
-            while (!FimListaAdj)
-            { ProxAdj(&v, Grafo, &Adj, &Peso, &Aux, &FimListaAdj);
-                InsereAresta(&Adj, &v, &Peso, GrafoT);
-            }
+void populaGrafo(Grafo* grafo, int edges[][3], int m) {
+// Storing edges
+    for (int i = 0; i < m; i++) {
+        addEdge(grafo, edges[i][0], edges[i][1], edges[i][2]);
+    }
+}
+
+
+void liberaGrafo(Grafo* grafo) {
+    for (int i = 1; i <= grafo->numDeVertices; i++) {
+        struct No* atual = grafo->head[i];
+        while (atual != NULL) {
+            struct No* proximo = atual->proximo;
+            free(atual);
+            atual = proximo;
         }
     }
-}  /* GrafoTransposto */
+    free(grafo->head);
+    grafo->head = NULL;
+}

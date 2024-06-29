@@ -1,15 +1,14 @@
 #include<stdlib.h>
 #include<stdio.h>
+#include "limits.h"
 
-#define MAXNUMVERTICES  100
-#define MAXNUMARESTAS   4500
 #define TRUE  1
 #define FALSE 0
 
 typedef int TipoValorVertice;
 typedef int  TipoPeso;
 typedef struct TipoGrafo {
-    TipoPeso Mat[MAXNUMVERTICES + 1][MAXNUMVERTICES + 1];
+    TipoPeso **Mat;
     int NumVertices;
     int NumArestas;
 } TipoGrafo;
@@ -47,3 +46,4 @@ void RetiraAresta(TipoValorVertice *V1, TipoValorVertice *V2,
 void LiberaGrafo(TipoGrafo *Grafo);
 void ImprimeGrafo(TipoGrafo *Grafo);
 void GrafoTransposto(TipoGrafo *Grafo, TipoGrafo *GrafoT);
+void LiberaGrafo(TipoGrafo *Grafo);
