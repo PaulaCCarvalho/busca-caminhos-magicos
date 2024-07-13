@@ -4,8 +4,9 @@
 #include <sys/resource.h>
 #include <unistd.h>
 #include <getopt.h>
+#include <sys/time.h>
 
-int verticeOrigem, verticeDestino, peso;
+int peso;
 const unsigned long LOTS = 50000000;
 struct rusage start, end;
 unsigned long i;
@@ -17,10 +18,11 @@ int numVertices = 0;
 int numArestas = 0;
 int k = 0;
 int V1, V2, peso;
+struct timeval t0, t1;
 
 int main(int argc, char *argv[]) {
      getrusage(RUSAGE_SELF, &start);
-
+     gettimeofday(&t0, 0);
     // Processando os argumentos de linha de comando
     while ((opt = getopt(argc, argv, "i:o:")) != -1) {
         switch (opt) {
@@ -83,5 +85,8 @@ int main(int argc, char *argv[]) {
           (start.ru_utime.tv_sec+start.ru_utime.tv_usec*1e-6);
 
     printf("%lu of that took %f seconds (%f sec/act) to accomplish.\n",LOTS, diff, (diff/(double)LOTS));
+    gettimeofday(&t1, 0);
+    long long elapsed = (t1.tv_sec-t0.tv_sec)*1000000LL + t1.tv_usec-t0.tv_usec;
+    printf("tempo calculado com gettimeofday: %lld", elapsed);
     return 0;
 }
