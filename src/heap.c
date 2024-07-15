@@ -5,7 +5,7 @@
 void criaHeap(Heap* heap, int capacidadeInicial) {
     // Inicializa o heap com capacidade inicial
     heap->capacidade = capacidadeInicial;
-    heap->fila = (FilaPrioridade *)malloc(capacidadeInicial * sizeof(FilaPrioridade));
+    heap->fila = (Elemento *)malloc(capacidadeInicial * sizeof(Elemento));
     if (heap->fila == NULL) {
         fprintf(stderr, "Erro: Falha ao alocar memória para o heap.\n");
         exit(EXIT_FAILURE);
@@ -14,12 +14,10 @@ void criaHeap(Heap* heap, int capacidadeInicial) {
 }
 
 void inserirMinHeap(Heap* heap, int distancia, int vertice) {
-   // printf("será inserido distancia %d  | vertice %d\n", distancia, vertice);
-
     if (heap->tamanho == heap->capacidade) {
         // Redimensiona o heap para o dobro da capacidade atual
         heap->capacidade *= 2;
-        heap->fila = (FilaPrioridade *)realloc(heap->fila, heap->capacidade * sizeof(FilaPrioridade));
+        heap->fila = (Elemento *)realloc(heap->fila, heap->capacidade * sizeof(Elemento));
         if (heap->fila == NULL) {
             fprintf(stderr, "Erro: Falha ao realocar memória para o heap.\n");
             exit(EXIT_FAILURE);
@@ -36,21 +34,20 @@ void inserirMinHeap(Heap* heap, int distancia, int vertice) {
     ajustarMinHeap(heap, idx);
 }
 
-FilaPrioridade extrairMinHeap(Heap* heap) {
- //   printf("será extraido %d com vertice %d\n", heap->fila[0].distancia, heap->fila[0].vertice);
-    FilaPrioridade menorElemento = heap->fila[0];
+Elemento extrairMinHeap(Heap* heap) {
+    Elemento menorElemento = heap->fila[0];
     heap->fila[0] = heap->fila[heap->tamanho - 1];
     heap->tamanho--;
 
     // Reduz o tamanho do heap se estiver muito grande
-   /* if (heap->tamanho > 0 && heap->tamanho <= heap->capacidade / 4) {
+   if (heap->tamanho > 0 && heap->tamanho <= heap->capacidade / 4) {
         heap->capacidade /= 2;
         heap->fila = (FilaPrioridade *)realloc(heap->fila, heap->capacidade * sizeof(FilaPrioridade));
         if (heap->fila == NULL) {
             fprintf(stderr, "Erro: Falha ao realocar memória para o heap.\n");
             exit(EXIT_FAILURE);
         }
-    }*/
+    }
 
     // Executa o ajuste de heap mínimo a partir da raiz
     ajustarMinHeap(heap, 0);
@@ -69,7 +66,7 @@ void ajustarMinHeap(Heap *heap, int indice) {
             menor = direita;
         if (menor != indice) {
             // Troca os elementos
-            FilaPrioridade tmp = heap->fila[indice];
+            Elemento tmp = heap->fila[indice];
             heap->fila[indice] = heap->fila[menor];
             heap->fila[menor] = tmp;
             indice = menor;
