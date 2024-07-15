@@ -65,7 +65,6 @@ int main(int argc, char *argv[]) {
     // Fechar o arquivo de entrada após a leitura
     fclose(fp_in);
 
-    imprimeGrafo(&grafo, numVertices);
     // Abre o arquivo de saída para escrita
     FILE *fp_out = fopen(arquivoSaida, "w");
     if (fp_out == NULL) {
