@@ -4,7 +4,7 @@
 #include "graph.h"
 #include "heap.h"
 
-void inicializaDijkstra(int n, int k);
-void encontraKMenoresCaminhos(int n, int m, int k, Grafo* graph, Heap* heap,  char* outputFile);
-void imprimeKMenoresCaminhos(int n, int k, char* outputFile);
+void inicializaDijkstra(int numDeVertices, int k);
+void encontraKMenoresCaminhos(int numDeVertices, int k, Grafo* grafo, Heap* heap, char* arquivoSaida);
+void imprimeKMenoresCaminhos(int numDeVertices, int k, char* arquivoSaida);
 #endif //BUSCA_K_CAMINHOS_DIJKSTRA_K_SHORTEST_H

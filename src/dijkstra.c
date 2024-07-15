@@ -3,22 +3,21 @@
 #include <stdlib.h>
 #include <limits.h>
 
-int **distancias;
-
 // Função para comparar dois pares para ordenação no heap mínimo
 int comparaPares(const void* a, const void* b) {
-    return ((Par*)a)->primeiro - ((Par*)b)->primeiro;
+    return ((FilaPrioridade*)a)->distancia - ((FilaPrioridade*)b)->distancia;
 }
 
 // Função para encontrar os k menores caminhos usando Dijkstra
-void encontraKMenoresCaminhos(int n, int m, int k, Grafo* graph, Heap* heap, char* outputFile) {
+void encontraKMenoresCaminhos(int numDeVertices, int k, Grafo* grafo, Heap* heap, char* arquivoSaida) {
+    int **distancias;
     // Inicialização das estruturas
-    distancias = (int **)malloc((n + 1) * sizeof(int *));
+    distancias = (int **)malloc((numDeVertices + 1) * sizeof(int *));
     if (distancias == NULL) {
         fprintf(stderr, "Erro: Falha ao alocar memória para distancias.\n");
         exit(EXIT_FAILURE);
     }
-    for (int i = 1; i <= n; i++) {
+    for (int i = 1; i <= numDeVertices; i++) {
         distancias[i] = (int *)malloc(k * sizeof(int));
         if (distancias[i] == NULL) {
             fprintf(stderr, "Erro: Falha ao alocar memória para distancias[%d].\n", i);
@@ -30,65 +29,79 @@ void encontraKMenoresCaminhos(int n, int m, int k, Grafo* graph, Heap* heap, cha
     }
 
     // Inicialização da fila de prioridade (heap mínimo)
-    insertMinHeap(heap, 0, 1); // Inserir nó inicial com distância 0
+    inserirMinHeap(heap, 0, 1); // Inserir nó inicial com distância 0
     distancias[1][0] = 0;
 
     // Processamento do algoritmo de Dijkstra
-    while (heap->pqSize > 0) {
-        Par minPair = extractMinHeap(heap);
-        int u = minPair.segundo;
-        int d = minPair.primeiro;
+    while (heap->tamanho > 0) {
+        FilaPrioridade menorElemento = extrairMinHeap(heap);
+        int u = menorElemento.vertice;
+        int d = menorElemento.distancia;
+      //  printf("u = %d | d = %d | distancias[u][k-1] %d\n", u, d, distancias[u][k - 1]);
 
         if (distancias[u][k - 1] < d) continue;
 
-        struct No *iter = graph->head[u];
-        while (iter != NULL) {
-            int dest = iter->destino;
-            int cost = iter->peso;
+        struct No *atual = grafo->head[u];
+     //   printf("atual %d\n", grafo->head[u]->peso);
+        while (atual != NULL) {
+                int destino = atual->destino;
+                int peso = atual->peso;
 
-            if (distancias[dest] == NULL) {
-                distancias[dest] = (int *)malloc(k * sizeof(int));
-                if (distancias[dest] == NULL) {
-                    fprintf(stderr, "Erro: Falha ao alocar memória para distancias[%d].\n", dest);
-                    exit(EXIT_FAILURE);
+                if (distancias[destino] == NULL) {
+                    distancias[destino] = (int *) malloc(k * sizeof(int));
+                    if (distancias[destino] == NULL) {
+                        fprintf(stderr, "Erro: Falha ao alocar memória para distancias[%d].\n", destino);
+                        exit(EXIT_FAILURE);
+                    }
+                    for (int j = 0; j < k; j++) {
+                        distancias[destino][j] = INT_MAX; // Inicializar com valor máximo
+                    }
                 }
-                for (int j = 0; j < k; j++) {
-                    distancias[dest][j] = INT_MAX; // Inicializar com valor máximo
+
+                //   printf("d + peso %d | distancia %d \n", d + peso, distancias[destino][k - 1]);
+                if (d + peso < distancias[destino][k - 1]) {
+                    distancias[destino][k - 1] = d + peso;
+
+                    // Ordenar as k menores distâncias do vértice destino
+                    qsort(distancias[destino], k, sizeof(int), comparaPares);
+
+                    //  printf("tamanho da heap  %d | numDeVertice * k %d \n", heap->tamanho, numDeVertices*k);
+                    if (heap->tamanho < numDeVertices * k) {
+                        inserirMinHeap(heap, d + peso, destino);
+                    }
                 }
-            }
+                //      printf("tamanho da heap  %d | numDeVertice * k %d \n", heap->tamanho, numDeVertices*k);
 
-            if (d + cost < distancias[dest][k - 1]) {
-                distancias[dest][k - 1] = d + cost;
-
-                // Ordenar as k menores distâncias do vértice dest
-                qsort(distancias[dest], k, sizeof(int), comparaPares);
-
-                if (heap->pqSize < n * k) {
-                    insertMinHeap(heap, d + cost, dest);
-                }
-            }
-            iter = iter->proximo;
+                atual = atual->proximo;
+                /* for (int i = 1; i <= numDeVertices; i++){
+                     printf("linha %d \n", i);
+                     for (int j = 0; j < k; j++) {
+                         printf("%d ", distancias[i][j]);
+                     }
+                     printf("\n");
+                 }
+                 printf("-------------------------------------- \n");*/
         }
     }
 
     // Escrever as k menores distâncias no arquivo de saída
-    FILE *fp_out = fopen(outputFile, "w");
+    FILE *fp_out = fopen(arquivoSaida, "w");
     if (fp_out == NULL) {
-        fprintf(stderr, "Não foi possível abrir o arquivo de saída '%s'.\n", outputFile);
+        fprintf(stderr, "Não foi possível abrir o arquivo de saída '%s'.\n", arquivoSaida);
         exit(EXIT_FAILURE);
     }
 
     for (int i = 0; i < k; i++) {
-        fprintf(fp_out, "%d ", distancias[n][i]);
-        printf("%d ", distancias[n][i]);
+        fprintf(fp_out, "%d ", distancias[numDeVertices][i]);
+        printf("%d ", distancias[numDeVertices][i]);
     }
     fprintf(fp_out, "\n");
 
     fclose(fp_out);
-    printf("Dados processados e salvos em '%s'.\n", outputFile);
+    printf("Dados processados e salvos em '%s'.\n", arquivoSaida);
 
     // Liberação de memória
-    for (int i = 1; i <= n; i++) {
+    for (int i = 1; i <= numDeVertices; i++) {
         free(distancias[i]);
     }
     free(distancias);

@@ -12,28 +12,26 @@ void criaGrafoVazio(Grafo* grafo, int numDeVertices) {
 }
 
 
-// Function to create a new node
-struct No* createNode(int dest, int cost) {
-    struct No* newNode = (struct No*)malloc(sizeof(struct No));
-    newNode->destino = dest;
-    newNode->peso = cost;
-    newNode->proximo = NULL;
-    return newNode;
+struct No* criarNo(int destino, int peso) {
+    struct No* novoNo = (struct No*)malloc(sizeof(struct No));
+    novoNo->destino = destino;
+    novoNo->peso = peso;
+    novoNo->proximo = NULL;
+    return novoNo;
 }
 
-void addEdge(Grafo* grafo, int src, int dest, int cost) {
-    // Criar um novo nó
-    struct No* newNode = (struct No*)malloc(sizeof(struct No));
-    newNode->destino = dest;
-    newNode->peso = cost;
-    newNode->proximo = NULL;
+void insereAresta(Grafo* grafo, int origem, int destino, int peso) {
+    struct No* novoNo = (struct No*)malloc(sizeof(struct No));
+    novoNo->destino = destino;
+    novoNo->peso = peso;
+    novoNo->proximo = NULL;
 
-    // Inserir o novo nó no início da lista de adjacência de src
-    if (grafo->head[src] == NULL) {
-        grafo->head[src] = newNode;
+    // Inserir o novo nó no início da lista de adjacência de origem
+    if (grafo->head[origem] == NULL) {
+        grafo->head[origem] = novoNo;
     } else {
-        newNode->proximo = grafo->head[src];
-        grafo->head[src] = newNode;
+        novoNo->proximo = grafo->head[origem];
+        grafo->head[origem] = novoNo;
     }
 }
 
@@ -41,22 +39,14 @@ void addEdge(Grafo* grafo, int src, int dest, int cost) {
 void imprimeGrafo(Grafo* grafo, int numDeVertices) {
     for (int i = 1; i <= numDeVertices; i++) {
         printf("Vértice %d: ", i);
-        struct No* curr = grafo->head[i];
-        while (curr != NULL) {
-            printf("%d (%d) -> ", curr->destino, curr->peso);
-            curr = curr->proximo;
+        struct No* atual = grafo->head[i];
+        while (atual != NULL) {
+            printf("%d (%d) -> ", atual->destino, atual->peso);
+            atual = atual->proximo;
         }
         printf("\n");
     }
 }
-
-void populaGrafo(Grafo* grafo, int edges[][3], int m) {
-// Storing edges
-    for (int i = 0; i < m; i++) {
-        addEdge(grafo, edges[i][0], edges[i][1], edges[i][2]);
-    }
-}
-
 
 void liberaGrafo(Grafo* grafo) {
     for (int i = 1; i <= grafo->numDeVertices; i++) {

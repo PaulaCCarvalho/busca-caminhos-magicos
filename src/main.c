@@ -6,31 +6,30 @@
 #include <getopt.h>
 #include <sys/time.h>
 
-int peso;
-const unsigned long LOTS = 50000000;
-struct rusage start, end;
-unsigned long i;
-double diff;
-int opt;
-char *inputFile = NULL;
-char *outputFile = NULL;
-int numVertices = 0;
-int numArestas = 0;
-int k = 0;
-int V1, V2, peso;
-struct timeval t0, t1;
-
 int main(int argc, char *argv[]) {
-     getrusage(RUSAGE_SELF, &start);
-     gettimeofday(&t0, 0);
+    char *arquivoEntrada = NULL, *arquivoSaida = NULL;
+    int opt, V1, V2, peso, k= 0, numVertices =0, numArestas = 0;
+    struct rusage r_usage;
+    struct timeval inicioRelogio, finalRelogio;
+    struct timeval inicioCPU, finalCPU;
+
+    // Pega o tempo de relógio no início
+    gettimeofday(&inicioRelogio, NULL);
+
+    // Pega o tempo de CPU no início
+    getrusage(RUSAGE_SELF, &r_usage);
+    inicioCPU = r_usage.ru_utime;
+
+    //Inicio da execução do programa
+
     // Processando os argumentos de linha de comando
     while ((opt = getopt(argc, argv, "i:o:")) != -1) {
         switch (opt) {
             case 'i':
-                inputFile = optarg;
+                arquivoEntrada = optarg;
                 break;
             case 'o':
-                outputFile = optarg;
+                arquivoSaida = optarg;
                 break;
             default:
                 fprintf(stderr, "Uso: %s -i <arquivo_entrada> -o <arquivo_saida>\n", argv[0]);
@@ -39,15 +38,15 @@ int main(int argc, char *argv[]) {
     }
 
     // Verificando se foram fornecidos arquivos de entrada e saída
-    if (inputFile == NULL || outputFile == NULL) {
+    if (arquivoEntrada == NULL || arquivoSaida == NULL) {
         fprintf(stderr, "Você deve fornecer tanto o arquivo de entrada quanto o arquivo de saída.\n");
         exit(EXIT_FAILURE);
     }
 
     // Abra o arquivo de entrada para leitura
-    FILE *fp_in = fopen(inputFile, "r");
+    FILE *fp_in = fopen(arquivoEntrada, "r");
     if (fp_in == NULL) {
-        fprintf(stderr, "Não foi possível abrir o arquivo de entrada '%s'.\n", inputFile);
+        fprintf(stderr, "Não foi possível abrir o arquivo de entrada '%s'.\n", arquivoEntrada);
         exit(EXIT_FAILURE);
     }
 
@@ -60,33 +59,42 @@ int main(int argc, char *argv[]) {
     criaHeap(&heap, k);
 
     while (fscanf(fp_in, "%d %d %d", &V1, &V2, &peso) == 3) {
-        addEdge(&grafo, V1, V2, peso);
+        insereAresta(&grafo, V1, V2, peso);
     }
 
     // Fechar o arquivo de entrada após a leitura
     fclose(fp_in);
 
+    imprimeGrafo(&grafo, numVertices);
     // Abre o arquivo de saída para escrita
-    FILE *fp_out = fopen(outputFile, "w");
+    FILE *fp_out = fopen(arquivoSaida, "w");
     if (fp_out == NULL) {
-        fprintf(stderr, "Não foi possível abrir o arquivo de saída '%s'.\n", outputFile);
+        fprintf(stderr, "Não foi possível abrir o arquivo de saída '%s'.\n", arquivoSaida);
         exit(EXIT_FAILURE);
     }
 
-    //imprimeGrafo(&grafo, numVertices);
-    encontraKMenoresCaminhos(numVertices, numArestas, k, &grafo, &heap, outputFile);
-//    imprimeGrafo(&grafo, numVertices);
+    encontraKMenoresCaminhos(numVertices, k, &grafo, &heap, arquivoSaida);
 
+    //Libera estruturas alocadas
     liberaGrafo(&grafo);
     liberaHeap(&heap);
-    getrusage(RUSAGE_SELF, &end);
 
-    diff = end.ru_utime.tv_sec+end.ru_utime.tv_usec*1e-6 -
-          (start.ru_utime.tv_sec+start.ru_utime.tv_usec*1e-6);
+    /* Final da execução */
+    // Pega o tempo de relógio no final
+    gettimeofday(&finalRelogio, NULL);
 
-    printf("%lu of that took %f seconds (%f sec/act) to accomplish.\n",LOTS, diff, (diff/(double)LOTS));
-    gettimeofday(&t1, 0);
-    long long elapsed = (t1.tv_sec-t0.tv_sec)*1000000LL + t1.tv_usec-t0.tv_usec;
-    printf("tempo calculado com gettimeofday: %lld", elapsed);
+    // Pega o tempo de CPU no final
+    getrusage(RUSAGE_SELF, &r_usage);
+    finalCPU = r_usage.ru_utime;
+
+    // Calcula a diferença de tempo de relógio em segundos e microsegundos
+    double wall_time_used = (finalRelogio.tv_sec - inicioRelogio.tv_sec) + (finalRelogio.tv_usec - inicioRelogio.tv_usec) / 1e6;
+
+    // Calcula a diferença de tempo de CPU em segundos e microsegundos
+    double cpu_time_used = (finalCPU.tv_sec - inicioCPU.tv_sec) + (finalCPU.tv_usec - inicioCPU.tv_usec) / 1e6;
+
+    printf("Tempo de relógio: %f segundos\n", wall_time_used);
+    printf("Tempo de CPU: %f segundos\n", cpu_time_used);
+
     return 0;
 }
