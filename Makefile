@@ -27,10 +27,9 @@ $(TARGET): $(OBJS)
 $(SRC_DIR)/%.o: $(SRC_DIR)/%.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
-# Regra para compilar, executar e limpar tudo em um único comando
+# Regra para executar a aplicação
 run: $(TARGET)
 	./$(TARGET) $(ARGS)
-	rm -f $(TARGET) $(OBJS)
 
 # Limpeza dos arquivos objeto e do executável
 clean:
