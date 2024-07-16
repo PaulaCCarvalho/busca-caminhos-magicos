@@ -87,13 +87,13 @@ int main(int argc, char *argv[]) {
     finalCPU = r_usage.ru_utime;
 
     // Calcula a diferença de tempo de relógio em segundos e microsegundos
-    double wall_time_used = (finalRelogio.tv_sec - inicioRelogio.tv_sec) + (finalRelogio.tv_usec - inicioRelogio.tv_usec) / 1e6;
+    double wall_time_used = ((finalRelogio.tv_sec - inicioRelogio.tv_sec) * 1000.0)+ (finalRelogio.tv_usec - inicioRelogio.tv_usec) / 1e3;
 
     // Calcula a diferença de tempo de CPU em segundos e microsegundos
-    double cpu_time_used = (finalCPU.tv_sec - inicioCPU.tv_sec) + (finalCPU.tv_usec - inicioCPU.tv_usec) / 1e6;
+    double cpu_time_used = ((finalCPU.tv_sec - inicioCPU.tv_sec) * 1000.0) + (finalCPU.tv_usec - inicioCPU.tv_usec) / 1e3;
 
-    printf("Tempo de relógio: %f segundos\n", wall_time_used);
-    printf("Tempo de CPU: %f segundos\n", cpu_time_used);
+    printf("Tempo de relógio: %f ms\n", wall_time_used);
+    printf("Tempo de CPU: %f ms\n", cpu_time_used);
 
     return 0;
 }
