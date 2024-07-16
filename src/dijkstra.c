@@ -8,6 +8,24 @@ int comparaPares(const void* a, const void* b) {
     return ((Elemento*)a)->distancia - ((Elemento*)b)->distancia;
 }
 
+void imprimeKMenoresCaminhos(int **distancias, int numDeVertices, int k, char* arquivoSaida) {
+    // Escrever as k menores distâncias no arquivo de saída
+    FILE *fp_out = fopen(arquivoSaida, "w");
+    if (fp_out == NULL) {
+        fprintf(stderr, "Não foi possível abrir o arquivo de saída '%s'.\n", arquivoSaida);
+        exit(EXIT_FAILURE);
+    }
+
+    for (int i = 0; i < k; i++) {
+        fprintf(fp_out, "%d ", distancias[numDeVertices][i]);
+        printf("%d ", distancias[numDeVertices][i]);
+    }
+    fprintf(fp_out, "\n");
+
+    fclose(fp_out);
+    printf("Dados processados e salvos em '%s'.\n", arquivoSaida);
+}
+
 // Função para encontrar os k menores caminhos usando Dijkstra
 void encontraKMenoresCaminhos(int numDeVertices, int k, Grafo* grafo, Heap* heap, char* arquivoSaida) {
     int **distancias;
@@ -71,21 +89,7 @@ void encontraKMenoresCaminhos(int numDeVertices, int k, Grafo* grafo, Heap* heap
         }
     }
 
-    // Escrever as k menores distâncias no arquivo de saída
-    FILE *fp_out = fopen(arquivoSaida, "w");
-    if (fp_out == NULL) {
-        fprintf(stderr, "Não foi possível abrir o arquivo de saída '%s'.\n", arquivoSaida);
-        exit(EXIT_FAILURE);
-    }
-
-    for (int i = 0; i < k; i++) {
-        fprintf(fp_out, "%d ", distancias[numDeVertices][i]);
-        printf("%d ", distancias[numDeVertices][i]);
-    }
-    fprintf(fp_out, "\n");
-
-    fclose(fp_out);
-    printf("Dados processados e salvos em '%s'.\n", arquivoSaida);
+    imprimeKMenoresCaminhos(distancias, numDeVertices, k, arquivoSaida);
 
     // Liberação de memória
     for (int i = 1; i <= numDeVertices; i++) {
@@ -93,3 +97,5 @@ void encontraKMenoresCaminhos(int numDeVertices, int k, Grafo* grafo, Heap* heap
     }
     free(distancias);
 }
+
+
